@@ -26,3 +26,23 @@ export async function createPost(request:Request,response:Response):Promise<void
   }
 }
 
+export async function updatePost(request: Request, response: Response): Promise<void> {
+  try {
+    const { title, content } = request.body;
+    const id = request.params.id;
+    const post: IPost | null = await postModel.findById(id);
+
+    if (!post) {
+      handleError(response, 404, "Post not found"); 
+      return;
+    }
+    
+    if (title) post.title = title;     
+    if (content) post.content = content; 
+    await post.save();
+
+    response.status(200).json({ success: true, data: post });
+  } catch (error: any) {
+    handleError(response, 500, error?.message);
+  }
+}
