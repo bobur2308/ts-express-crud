@@ -7,10 +7,30 @@ export async function getPosts(request: Request, response: Response): Promise<vo
   try {
     const posts:IPost[] = await postModel.find();
     response.status(200).json({ success: true, data: posts }); 
-  } catch (error: any) {
-    handleError(response, 500, error.message); 
+  } catch (error:any) {
+    handleError(response,500,error.message? error.message :"Server error")
   }
 }
+
+export async function getPostById(request:Request,response:Response):Promise<void>{
+  try {
+    const id = request.params.id;
+    if(!id){
+      handleError(response,404,'Id not found')
+      return
+    }
+    const post: IPost | null = await postModel.findById(id)
+    if(!post){
+      handleError(response,404,'Post not found')
+      return
+    }
+
+    response.status(200).json({success:true,data:post})
+  } catch (error:any) {
+    handleError(response,500,error.message? error.message :"Server error")
+  }
+}
+
 
 export async function createPost(request:Request,response:Response):Promise<void>{
   try{
@@ -21,8 +41,8 @@ export async function createPost(request:Request,response:Response):Promise<void
 
     const post:IPost = await postModel.create({title,content});
     response.status(201).json({success:true,data:post});
-  }catch(error:any){
-    handleError(response,500,error.message);
+  }catch (error:any) {
+    handleError(response,500,error.message? error.message :"Server error")
   }
 }
 
@@ -42,7 +62,27 @@ export async function updatePost(request: Request, response: Response): Promise<
     await post.save();
 
     response.status(200).json({ success: true, data: post });
-  } catch (error: any) {
-    handleError(response, 500, error?.message);
+  } catch (error:any) {
+    handleError(response,500,error.message? error.message :"Server error")
+  }
+}
+
+export async function deletePost(request:Request,response:Response):Promise<void>{
+  try {
+    const id = request.params.id;
+    if(!id){
+      handleError(response,404,'Id not found')
+      return
+    }
+    const post: IPost | null = await postModel.findById(id)
+    if(!post){
+      handleError(response,404,'Post not found')
+      return
+    }
+    await post?.deleteOne()
+
+    response.status(201).json({success:true,message:"Post deleted"})
+  } catch (error:any) {
+    handleError(response,500,error.message? error.message :"Server error")
   }
 }
